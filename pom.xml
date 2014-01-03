@@ -1,23 +1,20 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.mule.tools</groupId>
 	<artifactId>mule-mmc-rest-plugin</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.2-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
-	<name>Mule MMC REST Plugin</name>
+	<name>${project.artifactId}</name>
 	<description>Maven plugin for performing RESTful actions to the Mule ESB MMC</description>
-	<url>https://github.com/NicholasAStuart/Maven-Mule-REST-Plugin.git</url>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<scm>
-		<connection>scm:git:https://github.com/NicholasAStuart/Maven-Mule-REST-Plugin.git</connection>
-		<url>scm:git:https://github.com/NicholasAStuart/Maven-Mule-REST-Plugin.git</url>
-		<developerConnection>scm:git:https://github.com/NicholasAStuart/Maven-Mule-REST-Plugin.git</developerConnection>
-	</scm>
+        <developerConnection>scm:git:https://github.com/palma/Maven-Mule-REST-Plugin.git</developerConnection>
+    </scm>
 
 	<licenses>
 		<license>
@@ -38,6 +35,11 @@
 			<name>Mohamed EL HABIB</name>
 			<email>melhabib@digitas.fr</email>
 		</developer>
+        <developer>
+            <id>palma</id>
+            <name>Pascal Alma</name>
+            <email>blog@pascalalma.net</email>
+        </developer>
 	</developers>
 
 	<dependencies>
@@ -46,11 +48,17 @@
 			<artifactId>slf4j-maven-plugin-log</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-plugin-api</artifactId>
-			<version>3.0.5</version>
-		</dependency>
+
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>3.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+            <version>3.2</version>
+        </dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
@@ -81,14 +89,23 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
 				<version>3.2</version>
-				<executions>
-					<execution>
-						<id>generated-helpmojo</id>
-						<goals>
-							<goal>helpmojo</goal>
-						</goals>
-					</execution>
-				</executions>
+                <!-- Fix for http://jira.codehaus.org/browse/MNG-5346-->
+                <executions>
+                    <execution>
+                        <id>default-descriptor</id>
+                        <goals>
+                            <goal>descriptor</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                    <execution>
+                        <id>generated-helpmojo</id>
+                        <goals>
+                            <goal>helpmojo</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -125,17 +142,17 @@
 		</plugins>
 	</build>
 
-	<distributionManagement>
-		<repository>
-			<id>muleforge-releases</id>
-			<name>MuleForge Snapshot Repository</name>
-			<url>http://repository.mulesoft.org/releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>muleforge-snapshots</id>
-			<name>MuleForge Repository</name>
-			<url>http://repository.mulesoft.org/snapshots/</url>
-			<uniqueVersion>false</uniqueVersion>
-		</snapshotRepository>
-	</distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>muleforge-releases</id>
+            <name>MuleForge Snapshot Repository</name>
+            <url>http://repository.mulesoft.org/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>muleforge-snapshots</id>
+            <name>MuleForge Repository</name>
+            <url>http://repository.mulesoft.org/snapshots/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

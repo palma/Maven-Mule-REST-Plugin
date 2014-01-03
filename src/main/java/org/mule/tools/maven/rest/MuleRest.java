@@ -17,6 +17,8 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.cxf.helpers.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.AttachmentBuilder;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 import org.apache.cxf.transport.http.HTTPException;
 import org.codehaus.jackson.JsonFactory;
@@ -82,7 +84,6 @@ public class MuleRest {
 	WebClient webClient = getWebClient("deployments");
     webClient.type(MediaType.APPLICATION_JSON_TYPE);
 
-
 	try {
 	    StringWriter stringWriter = new StringWriter();
 	    JsonFactory jfactory = new JsonFactory();
@@ -103,6 +104,7 @@ public class MuleRest {
 	    jGenerator.close();
 
 	    Response response = webClient.post(stringWriter.toString());
+
 	    InputStream responseStream = (InputStream) response.getEntity();
 	    JsonNode jsonNode = OBJECT_MAPPER.readTree(responseStream);
 
@@ -221,16 +223,61 @@ public class MuleRest {
 	return serversId;
     }
 
+    public void restfullyDeleteRepository(String versionId) throws IOException {
+        WebClient webClient = getWebClient("repository", versionId);
+        try {
+            Response response = webClient.delete();
+            processResponse(response);
+        } finally {
+            webClient.close();
+        }
+    }
+
+    public String restfullyGetApplicationIdByName(String name, String version) throws IOException {
+        WebClient webClient = getWebClient("repository");
+
+        String versionId = null;
+        try {
+            Response response = webClient.get();
+
+            InputStream responseStream = (InputStream) response.getEntity();
+            JsonNode jsonNode = OBJECT_MAPPER.readTree(responseStream);
+            JsonNode applicationsNode = jsonNode.path("data");
+            for (JsonNode applicationNode : applicationsNode) {
+                if (name.equalsIgnoreCase(applicationNode.path("name").asText())) {
+                    JsonNode versionsNode = applicationNode.path("versions");
+                    for (JsonNode versionNode : versionsNode) {
+
+                        if (version.equalsIgnoreCase(versionNode.path("name").asText())) {
+                            versionId = versionNode.path("id").asText();
+                            break;
+                        }
+                    }
+                    if (versionId != null) break;
+                }
+            }
+        } finally {
+            webClient.close();
+        }
+        return versionId;
+    }
+
     public String restfullyUploadRepository(String name, String version, File packageFile) throws IOException {
 	WebClient webClient = getWebClient("repository");
 	webClient.type("multipart/form-data");
 
 	try {
-	    Attachment nameAttachment = new Attachment("name", MediaType.TEXT_PLAIN, name);
-	    Attachment versionAttachment = new Attachment("version", MediaType.TEXT_PLAIN, version);
-	    Attachment fileAttachment = new Attachment("file", new FileInputStream(packageFile), null);
+	    Attachment nameAttachment = new AttachmentBuilder().id("name")
+		    .object(name)
+		    .contentDisposition(new ContentDisposition("form-data; name=\"name\""))
+		    .build();
+	    Attachment versionAttachment = new AttachmentBuilder().id("version")
+		    .object(version)
+		    .contentDisposition(new ContentDisposition("form-data; name=\"version\""))
+		    .build();
+	    Attachment fileAttachment = new Attachment("file", new FileInputStream(packageFile), new ContentDisposition("form-data; name=\"file\"; filename=\"" + packageFile.getName() + "\""));
 
-	    MultipartBody multipartBody = new MultipartBody(Arrays.asList(nameAttachment, versionAttachment, fileAttachment));
+	    MultipartBody multipartBody = new MultipartBody(Arrays.asList(fileAttachment, nameAttachment, versionAttachment), MediaType.MULTIPART_FORM_DATA_TYPE, true);
 
 	    Response response = webClient.post(multipartBody);
 
@@ -244,10 +291,4 @@ public class MuleRest {
 	    webClient.close();
 	}
     }
-
-    public void restfullyDeleteRepository(String name, String versionId) {
-	// TODO Auto-generated method stub
-	
-    }
-
 }

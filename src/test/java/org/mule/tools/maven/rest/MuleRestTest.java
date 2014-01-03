@@ -329,8 +329,8 @@ public class MuleRestTest {
 		.toString();
 
 	File file = File.createTempFile("prefix", "suffix");
-	InputStream inputStream = new FileInputStream(file);
-	String fileContent = IOUtils.toString(inputStream);
+//	InputStream inputStream = new FileInputStream(file);
+//	String fileContent = IOUtils.toString(inputStream);
 
 	stubFor(post(urlEqualTo("/repository")).willReturn(aResponse().withStatus(200)
 		.withHeader("Content-Type", "application/json")
@@ -342,9 +342,11 @@ public class MuleRestTest {
 
 	verify(postRequestedFor(urlMatching("/repository")).withHeader("Content-Type", containing("multipart/form-data"))
 		.withHeader("Authorization", equalTo("Basic YWRtaW46YWRtaW4="))
-		.withRequestBody(containing("\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: binary\r\nContent-ID: <name>\r\n\r\n" + name + "\r\n"))
-		.withRequestBody(containing("\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: binary\r\nContent-ID: <version>\r\n\r\n" + version + "\r\n"))
-		.withRequestBody(containing("\r\nContent-Type: application/octet-stream\r\nContent-Transfer-Encoding: binary\r\nContent-ID: <file>\r\n" + fileContent + "\r\n")));
+		.withRequestBody(containing("\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: binary\r\nContent-ID: <name>\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n" + name + "\r\n"))
+		.withRequestBody(containing("\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: binary\r\nContent-ID: <version>\r\nContent-Disposition: form-data; name=\"version\"\r\n\r\n" + version + "\r\n"))
+		.withRequestBody(containing("\r\nContent-Type: application/octet-stream\r\nContent-Transfer-Encoding: binary\r\nContent-ID: <file>\r\nContent-Disposition: form-data; name=\"file\""))
+            //;filename=""+ file.getName()+""
+		 );
     }
 
     private void verifyCreateDeployment(String serverId, String name, String versionId) throws IOException {
